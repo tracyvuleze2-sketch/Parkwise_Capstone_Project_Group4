@@ -1107,6 +1107,7 @@ function checkAnomaly(){
 function refreshNearby(lat,lon){
   var withDist=parkingData.map(function(f){return Object.assign({},f,{_dist:haversine(lat,lon,f.latitude,f.longitude)})});
   var nearby=withDist.filter(function(f){return f._dist<=0.8}).sort(function(a,b){return a._dist-b._dist}).slice(0,15);
+  if(nearby.length<3){nearby=withDist.filter(function(f){return f._dist<=2.0}).sort(function(a,b){return a._dist-b._dist}).slice(0,15);showToast('Nearest parking found within 2km');}
   document.getElementById('sheet-count').textContent=nearby.length+' spots';
   document.getElementById('sheet-mini-label').textContent=nearby.length+' spots nearby';
   var scroll=document.getElementById('cards-scroll');scroll.innerHTML='';
@@ -1320,7 +1321,26 @@ function onDestInput(v){
 function openDestModal(){document.getElementById('dest-modal').classList.add('open')}
 function closeDestModal(){document.getElementById('dest-modal').classList.remove('open')}
 function applyDest(){
-  if(!currentDest){showToast('Pick a destination first');return}
+  var inputVal=document.getElementById('dest-input').value.trim();
+  // If user typed something but no preset matched, geocode it
+  if(!currentDest&&inputVal){
+    if(!window.google||!google.maps.Geocoder){showToast('Search unavailable');return}
+    showToast('Finding location…');
+    new google.maps.Geocoder().geocode({address:inputVal+', Nairobi, Kenya'},function(results,status){
+      if(status==='OK'&&results[0]){
+        var loc=results[0].geometry.location;
+        currentDest={name:results[0].formatted_address,lat:loc.lat(),lon:loc.lng()};
+        _applyDestCoords();
+      }else{
+        showToast('Location not found — try a different name');
+      }
+    });
+    return;
+  }
+  if(!currentDest){showToast('Enter a destination first');return}
+  _applyDestCoords();
+}
+function _applyDestCoords(){
   closeDestModal();currentDestLabel=currentDest.name;
   var dv=document.getElementById('dest-value');dv.textContent=currentDestLabel;dv.classList.add('set');
   document.getElementById('dest-bar').classList.add('has-dest');
