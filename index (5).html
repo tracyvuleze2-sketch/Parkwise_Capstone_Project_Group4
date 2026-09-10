@@ -1004,21 +1004,6 @@ function setupMap(){
   addAllMarkers();
   checkAnomaly();
   refreshNearby(userLat,userLon);
-  // Places autocomplete
-  var input=document.getElementById('dest-input');
-  if(input&&google.maps.places){
-    var ac=new google.maps.places.Autocomplete(input,{
-      componentRestrictions:{country:'ke'},
-      fields:['geometry','name','formatted_address']
-    });
-    ac.addListener('place_changed',function(){
-      var place=ac.getPlace();
-      if(place.geometry){
-        currentDest={name:place.name,lat:place.geometry.location.lat(),lon:place.geometry.location.lng()};
-        document.getElementById('dest-sec-lbl').textContent='Selected destination';
-      }
-    });
-  }
 }
 
 function addAllMarkers(){
