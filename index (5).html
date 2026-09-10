@@ -1092,7 +1092,8 @@ function checkAnomaly(){
 function refreshNearby(lat,lon){
   var withDist=parkingData.map(function(f){return Object.assign({},f,{_dist:haversine(lat,lon,f.latitude,f.longitude)})});
   var nearby=withDist.filter(function(f){return f._dist<=0.8}).sort(function(a,b){return a._dist-b._dist}).slice(0,15);
-  if(nearby.length<3){nearby=withDist.filter(function(f){return f._dist<=2.0}).sort(function(a,b){return a._dist-b._dist}).slice(0,15);showToast('Nearest parking found within 2km');}
+  if(nearby.length<3){nearby=withDist.filter(function(f){return f._dist<=2.0}).sort(function(a,b){return a._dist-b._dist}).slice(0,15);}
+  if(nearby.length===0){queryOSM(lat,lon);showToast('No CBD data here — loading OSM parking…');}
   document.getElementById('sheet-count').textContent=nearby.length+' spots';
   document.getElementById('sheet-mini-label').textContent=nearby.length+' spots nearby';
   var scroll=document.getElementById('cards-scroll');scroll.innerHTML='';
